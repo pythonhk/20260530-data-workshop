@@ -21,7 +21,6 @@ output "public_config_files" {
       local_file.team_allowlist_repo.filename,
     ],
     [for cert in local_file.scorer_cert_repo : cert.filename],
-    [for cert in local_file.team_cert_repo : cert.filename],
   )
 }
 

@@ -20,9 +20,8 @@ mise exec -- tofu apply
 After apply, commit the generated public files from the repository root:
 
 ```text
-config/public_keys/
-config/team_certs/
-config/team_allowlist.json
+.github/tournament/public_keys/
+.github/tournament/team_allowlist.json
 ```
 
 Give each team only its own folder from

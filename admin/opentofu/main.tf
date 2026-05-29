@@ -17,19 +17,19 @@ locals {
   }
 
   scorer_public_cert_paths = {
-    team_code      = "${local.repository_root}/config/public_keys/team_code_cert.pem"
-    cleaned_output = "${local.repository_root}/config/public_keys/cleaned_output_cert.pem"
-    hidden_labels  = "${local.repository_root}/config/public_keys/hidden_labels_cert.pem"
+    team_code      = "${local.repository_root}/.github/tournament/public_keys/team_code_cert.pem"
+    cleaned_output = "${local.repository_root}/.github/tournament/public_keys/cleaned_output_cert.pem"
+    hidden_labels  = "${local.repository_root}/.github/tournament/public_keys/hidden_labels_cert.pem"
   }
 
   team_allowlist = {
     schema_version = 1
     tournament     = var.tournament_name
-    ca_cert_path   = "config/public_keys/tournament_ca_cert.pem"
+    ca_cert_path   = ".github/tournament/public_keys/tournament_ca_cert.pem"
     teams = {
       for team_id, cert in tls_locally_signed_cert.team :
       team_id => {
-        cert_path   = "config/team_certs/${team_id}.cert.pem"
+        cert_pem    = cert.cert_pem
         cert_sha256 = sha256(cert.cert_pem)
       }
     }
@@ -140,7 +140,7 @@ resource "local_file" "root_ca_cert" {
 }
 
 resource "local_file" "root_ca_cert_repo" {
-  filename        = "${local.repository_root}/config/public_keys/tournament_ca_cert.pem"
+  filename        = "${local.repository_root}/.github/tournament/public_keys/tournament_ca_cert.pem"
   content         = tls_self_signed_cert.root_ca.cert_pem
   file_permission = "0644"
 }
@@ -193,14 +193,6 @@ resource "local_file" "team_cert" {
   file_permission = "0644"
 }
 
-resource "local_file" "team_cert_repo" {
-  for_each = toset(local.team_ids)
-
-  filename        = "${local.repository_root}/config/team_certs/${each.key}.cert.pem"
-  content         = tls_locally_signed_cert.team[each.key].cert_pem
-  file_permission = "0644"
-}
-
 resource "local_file" "team_public_key" {
   for_each = toset(local.team_ids)
 
@@ -222,11 +214,11 @@ resource "local_file" "team_readme" {
     Files:
     - team_private_key.pem: keep private; never commit.
     - team_public_key.pem: safe to share; included for inspection/debugging.
-    - team_cert.pem: public team certificate; the repository stores a copy.
+    - team_cert.pem: public team certificate; the repository stores it in the allowlist.
 
     Sign a submission manifest before opening a PR:
 
-    scripts/encrypt_submission.sh config/public_keys/team_code_cert.pem /path/to/team_private_key.pem
+    submission/encrypt_submission.sh /path/to/team_private_key.pem
 
     The tournament repository verifies submission/manifest.sig with this team's
     public certificate and the generated root CA.
@@ -240,7 +232,7 @@ resource "local_file" "team_allowlist" {
 }
 
 resource "local_file" "team_allowlist_repo" {
-  filename        = "${local.repository_root}/config/team_allowlist.json"
+  filename        = "${local.repository_root}/.github/tournament/team_allowlist.json"
   content         = jsonencode(local.team_allowlist)
   file_permission = "0644"
 }
