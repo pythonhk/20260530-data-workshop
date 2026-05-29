@@ -29,6 +29,20 @@ if [[ -n "$team_private_key_path" ]]; then
     exit 1
   fi
 
+  python3 - <<'PY'
+import hashlib
+import json
+from pathlib import Path
+
+manifest_path = Path("submission/manifest.json")
+code_path = Path("submission/clean.py.cms")
+
+manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+manifest["code_path"] = "submission/clean.py.cms"
+manifest["code_sha256"] = hashlib.sha256(code_path.read_bytes()).hexdigest()
+manifest_path.write_text(f"{json.dumps(manifest, indent=2)}\n", encoding="utf-8")
+PY
+
   openssl dgst \
     -sha256 \
     -sign "$team_private_key_path" \

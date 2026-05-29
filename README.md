@@ -65,6 +65,9 @@ to `submission/manifest.json`, set your assigned `team_id`, then run:
 submission/encrypt_submission.sh /path/to/team_private_key.pem
 ```
 
+The script encrypts `submission/clean.py`, writes its SHA-256 digest into the
+manifest, and signs the manifest with your team private key.
+
 ## Warm-Up Note
 
 The messy dataset still contains strongly corrupted numeric fields such as:
