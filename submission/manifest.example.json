@@ -1,5 +1,6 @@
 {
   "team_id": "team-01",
   "code_path": "submission/clean.py.cms",
+  "code_sha256": "filled-by-submission/encrypt_submission.sh",
   "notes": "Replace team_id with your assigned team identity before signing."
 }

@@ -11,6 +11,7 @@ from pathlib import Path
 
 
 TEAM_ID_RE = re.compile(r"^[A-Za-z0-9_.-]{2,64}$")
+SHA256_RE = re.compile(r"^[a-f0-9]{64}$")
 
 
 @dataclass(frozen=True)
@@ -44,6 +45,9 @@ def validate_team_id(manifest: dict) -> str:
         raise ValueError("manifest.json must contain a valid team_id")
     if manifest.get("code_path") != "submission/clean.py.cms":
         raise ValueError("manifest.json code_path must be submission/clean.py.cms")
+    code_sha256 = manifest.get("code_sha256")
+    if not isinstance(code_sha256, str) or not SHA256_RE.fullmatch(code_sha256):
+        raise ValueError("manifest.json must contain code_sha256 for clean.py.cms")
     return team_id
 
 
@@ -82,6 +86,16 @@ def run_openssl(args: list[str]) -> None:
     subprocess.run(["openssl", *args], check=True)
 
 
+def verify_code_digest(manifest: dict, repository_root: Path) -> None:
+    code_path = resolve_repo_path(repository_root, str(manifest["code_path"]))
+    if not code_path.is_file():
+        raise FileNotFoundError(code_path)
+
+    actual_sha256 = hashlib.sha256(code_path.read_bytes()).hexdigest()
+    if actual_sha256 != manifest["code_sha256"]:
+        raise ValueError("submission/clean.py.cms digest does not match manifest")
+
+
 def verify_submission(config: VerificationConfig) -> str:
     if not config.allowlist.is_file():
         print(f"No team allowlist found at {config.allowlist}; skipping verification.")
@@ -94,6 +108,7 @@ def verify_submission(config: VerificationConfig) -> str:
 
     manifest = read_json(config.manifest)
     team_id = validate_team_id(manifest)
+    verify_code_digest(manifest, config.repository_root)
     allowlist = read_json(config.allowlist)
     teams = allowlist.get("teams")
     if not isinstance(teams, dict) or team_id not in teams:
