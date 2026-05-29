@@ -1,0 +1,932 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>HKPUG Data Cleaning Leaderboard</title>
+    <style>
+      :root {
+        --border: #d8dee7;
+        --grid: #e8edf3;
+        --ink: #17202a;
+        --muted: #697586;
+        --panel: #f7f9fc;
+        --surface: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        background: var(--surface);
+        color: var(--ink);
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        margin: 0;
+      }
+
+      header {
+        align-items: center;
+        background: #1f2328;
+        color: #f6f8fa;
+        display: flex;
+        justify-content: space-between;
+        min-height: 56px;
+        padding: 0 1.25rem;
+      }
+
+      header h1 {
+        font-size: 1rem;
+        font-weight: 650;
+        margin: 0;
+      }
+
+      .event-label {
+        color: #b9c0ca;
+        font-size: 0.95rem;
+      }
+
+      main {
+        margin: 0 auto;
+        max-width: 1280px;
+        padding: 3rem 1.5rem 4rem;
+      }
+
+      .summary {
+        align-items: end;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 1.25rem;
+      }
+
+      .summary h2 {
+        font-size: 1.5rem;
+        margin: 0 0 0.35rem;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .score-strip {
+        display: grid;
+        gap: 0.8rem;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        margin-bottom: 1.25rem;
+      }
+
+      .score-card {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        min-width: 0;
+        padding: 0.95rem 1rem;
+      }
+
+      .score-card-top {
+        align-items: center;
+        display: flex;
+        gap: 0.55rem;
+        justify-content: space-between;
+      }
+
+      .rank-pill {
+        background: #eef2f8;
+        border-radius: 999px;
+        color: #334155;
+        display: inline-flex;
+        font-size: 0.75rem;
+        font-weight: 700;
+        justify-content: center;
+        min-width: 2.1rem;
+        padding: 0.25rem 0.45rem;
+      }
+
+      .team-name {
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .card-score {
+        font-size: 1.65rem;
+        font-variant-numeric: tabular-nums;
+        font-weight: 800;
+        margin-top: 0.65rem;
+      }
+
+      .card-meta {
+        color: var(--muted);
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 0.84rem;
+        gap: 0.45rem 0.8rem;
+        margin-top: 0.35rem;
+      }
+
+      .chart-panel {
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1rem;
+      }
+
+      .chart-heading {
+        align-items: start;
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+      }
+
+      .chart-heading h3 {
+        font-size: 1rem;
+        margin: 0 0 0.25rem;
+      }
+
+      .legend {
+        align-items: center;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem 1rem;
+        min-height: 28px;
+        padding-top: 0.9rem;
+      }
+
+      .legend-item {
+        align-items: center;
+        display: inline-flex;
+        font-size: 0.9rem;
+        gap: 0.4rem;
+        white-space: nowrap;
+      }
+
+      .legend-swatch {
+        display: inline-block;
+        height: 3px;
+        width: 28px;
+      }
+
+      .chart-scroll {
+        margin-top: 0.75rem;
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: 0.35rem;
+        scrollbar-gutter: stable;
+        -webkit-overflow-scrolling: touch;
+      }
+
+      .chart-wrap {
+        height: 430px;
+        min-width: 860px;
+        position: relative;
+      }
+
+      canvas {
+        display: block;
+        height: 100%;
+        width: 100%;
+      }
+
+      .chart-tooltip {
+        background: #111827;
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 8px;
+        box-shadow: 0 12px 28px rgba(17, 24, 39, 0.22);
+        color: #f8fafc;
+        display: none;
+        font-size: 0.82rem;
+        line-height: 1.35;
+        max-width: min(300px, calc(100vw - 2rem));
+        padding: 0.75rem 0.85rem;
+        pointer-events: none;
+        position: absolute;
+        z-index: 2;
+      }
+
+      .tooltip-team {
+        font-weight: 800;
+        margin-bottom: 0.25rem;
+      }
+
+      .tooltip-grid {
+        display: grid;
+        gap: 0.16rem 0.7rem;
+        grid-template-columns: max-content 1fr;
+      }
+
+      .tooltip-label {
+        color: #bac4d3;
+      }
+
+      .empty {
+        align-items: center;
+        background: var(--panel);
+        border: 1px dashed var(--border);
+        border-radius: 8px;
+        color: var(--muted);
+        display: none;
+        height: 100%;
+        justify-content: center;
+        left: 0;
+        position: absolute;
+        top: 0;
+        width: 100%;
+      }
+
+      .table-wrap {
+        margin-top: 2rem;
+        overflow-x: auto;
+      }
+
+      table {
+        border-collapse: collapse;
+        min-width: 1040px;
+        width: 100%;
+      }
+
+      th,
+      td {
+        border-bottom: 1px solid var(--border);
+        padding: 0.8rem 0.65rem;
+        text-align: left;
+        vertical-align: middle;
+      }
+
+      th {
+        background: var(--panel);
+        color: #3d4754;
+        font-size: 0.8rem;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      td {
+        font-size: 0.95rem;
+      }
+
+      a {
+        color: #2358c2;
+        font-weight: 650;
+        text-decoration: none;
+      }
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      .rank {
+        font-variant-numeric: tabular-nums;
+        width: 72px;
+      }
+
+      .score,
+      .number {
+        font-variant-numeric: tabular-nums;
+      }
+
+      .score {
+        font-weight: 800;
+      }
+
+      .delta {
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+      }
+
+      @media (max-width: 900px) {
+        .score-strip {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 720px) {
+        header {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 0.5rem;
+          padding: 0.9rem 1rem;
+        }
+
+        main {
+          padding: 2rem 1rem 3rem;
+        }
+
+        .summary,
+        .chart-heading {
+          align-items: flex-start;
+          flex-direction: column;
+          gap: 0.75rem;
+        }
+
+        .chart-wrap {
+          height: 360px;
+          min-width: 760px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>HKPUG Data Cleaning Tournament</h1>
+      <div class="event-label">Global Scoreboard</div>
+    </header>
+
+    <main>
+      <section class="summary">
+        <div>
+          <h2>Global Scoreboard</h2>
+          <div class="muted" id="updated">Loading leaderboard...</div>
+        </div>
+        <div class="muted" id="metric">Metric: primary score</div>
+      </section>
+
+      <section class="score-strip" id="score-strip" aria-label="Top scores"></section>
+
+      <section class="chart-panel" aria-label="Score history">
+        <div class="chart-heading">
+          <div>
+            <h3>Score History</h3>
+            <div class="muted" id="chart-range">Visible range: loading...</div>
+          </div>
+          <div class="muted" id="submission-count"></div>
+        </div>
+        <div class="legend" id="legend"></div>
+        <div class="chart-scroll" id="chart-scroll">
+          <div class="chart-wrap" id="chart-wrap">
+            <canvas id="score-chart"></canvas>
+            <div class="chart-tooltip" id="chart-tooltip"></div>
+            <div class="empty" id="empty-chart">No official submissions yet.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="table-wrap" aria-label="Current rankings">
+        <table>
+          <thead>
+            <tr>
+              <th class="rank">Rank</th>
+              <th>Team</th>
+              <th>Best score</th>
+              <th>Delta</th>
+              <th>F1</th>
+              <th>Best submitted</th>
+              <th>Latest submitted</th>
+              <th>Attempts</th>
+              <th>PR</th>
+              <th>Run</th>
+            </tr>
+          </thead>
+          <tbody id="entries">
+            <tr>
+              <td colspan="10">No scores yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+    </main>
+
+    <script>
+      const REPO_URL = "https://github.com/alex-au-922/hkpug-scorer-sandbox";
+      const COLORS = [
+        "#3366cc",
+        "#dc3912",
+        "#ff9900",
+        "#109618",
+        "#990099",
+        "#0099c6",
+        "#dd4477",
+        "#66aa00",
+        "#b82e2e",
+        "#316395",
+        "#994499",
+        "#22aa99",
+      ];
+
+      const timeFormatter = new Intl.DateTimeFormat("en-HK", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone: "Asia/Hong_Kong",
+      });
+      const compactDateFormatter = new Intl.DateTimeFormat("en-HK", {
+        day: "2-digit",
+        month: "short",
+        timeZone: "Asia/Hong_Kong",
+      });
+      const compactTimeFormatter = new Intl.DateTimeFormat("en-HK", {
+        hour: "2-digit",
+        minute: "2-digit",
+        timeZone: "Asia/Hong_Kong",
+      });
+
+      let latestData = null;
+      let resizeHandlerAttached = false;
+
+      function escapeHtml(value) {
+        return String(value ?? "")
+          .replaceAll("&", "&amp;")
+          .replaceAll("<", "&lt;")
+          .replaceAll(">", "&gt;")
+          .replaceAll('"', "&quot;")
+          .replaceAll("'", "&#039;");
+      }
+
+      function parseSubmission(submission) {
+        return {
+          ...submission,
+          f1_score:
+            submission.f1_score === undefined ? null : Number(submission.f1_score),
+          score: Number(submission.score),
+          submittedAt: new Date(submission.submitted_at),
+        };
+      }
+
+      function validSubmissions(data) {
+        return (data.submissions || [])
+          .map(parseSubmission)
+          .filter(
+            (submission) =>
+              submission.team_id &&
+              Number.isFinite(submission.score) &&
+              !Number.isNaN(submission.submittedAt.getTime())
+          );
+      }
+
+      function groupSubmissions(submissions) {
+        const grouped = new Map();
+        for (const submission of submissions) {
+          if (!grouped.has(submission.team_id)) {
+            grouped.set(submission.team_id, []);
+          }
+          grouped.get(submission.team_id).push(submission);
+        }
+
+        for (const values of grouped.values()) {
+          values.sort((a, b) => a.submittedAt - b.submittedAt);
+        }
+
+        return grouped;
+      }
+
+      function fallbackRankings(data) {
+        return (data.entries || [])
+          .map((entry) => ({
+            attempts: entry.attempts || 0,
+            bestSubmittedAt: entry.submitted_at || entry.best_submitted_at || "",
+            f1_score: null,
+            latestSubmittedAt: entry.latest_submitted_at || entry.submitted_at || "",
+            pr_number: entry.pr_number || "",
+            run_id: entry.run_id || "",
+            score: Number(entry.score),
+            team_id: entry.team_id,
+          }))
+          .filter((entry) => entry.team_id && Number.isFinite(entry.score))
+          .sort((a, b) => b.score - a.score || a.team_id.localeCompare(b.team_id));
+      }
+
+      function buildRankings(data) {
+        const grouped = groupSubmissions(validSubmissions(data));
+        if (grouped.size === 0) {
+          return fallbackRankings(data);
+        }
+
+        const rankings = [];
+        for (const [team_id, submissions] of grouped.entries()) {
+          const best = [...submissions].sort(
+            (a, b) => b.score - a.score || b.submittedAt - a.submittedAt
+          )[0];
+          const latest = submissions[submissions.length - 1];
+          rankings.push({
+            attempts: submissions.length,
+            bestSubmittedAt: best.submitted_at,
+            f1_score: best.f1_score,
+            latestSubmittedAt: latest.submitted_at,
+            pr_number: best.pr_number || "",
+            run_id: best.run_id || "",
+            score: best.score,
+            team_id,
+          });
+        }
+        return rankings.sort(
+          (a, b) => b.score - a.score || a.team_id.localeCompare(b.team_id)
+        );
+      }
+
+      function bestStepSeries(submissions) {
+        let best = Number.NEGATIVE_INFINITY;
+        const points = [];
+        for (const submission of submissions) {
+          if (submission.score < best) {
+            continue;
+          }
+          best = submission.score;
+          points.push({
+            submission,
+            x: submission.submittedAt.getTime(),
+            y: submission.score,
+          });
+        }
+        return points;
+      }
+
+      function formatScore(value, digits = 4) {
+        return Number.isFinite(value) ? value.toFixed(digits) : "";
+      }
+
+      function formatDelta(value, isLeader = false) {
+        if (!Number.isFinite(value)) {
+          return "";
+        }
+        if (isLeader) {
+          return "leader";
+        }
+        return value.toFixed(4);
+      }
+
+      function formatTime(value) {
+        if (!value) {
+          return "";
+        }
+        const date = new Date(value);
+        return Number.isNaN(date.getTime()) ? "" : timeFormatter.format(date);
+      }
+
+      function renderScoreStrip(rankings) {
+        const target = document.getElementById("score-strip");
+        if (rankings.length === 0) {
+          target.innerHTML = "";
+          return;
+        }
+
+        const leaderScore = rankings[0].score;
+        target.innerHTML = rankings
+          .slice(0, 3)
+          .map((entry, index) => {
+            const delta = entry.score - leaderScore;
+            const submitted = formatTime(entry.bestSubmittedAt);
+            return `
+              <article class="score-card">
+                <div class="score-card-top">
+                  <span class="rank-pill">#${index + 1}</span>
+                  <span class="team-name">${escapeHtml(entry.team_id)}</span>
+                </div>
+                <div class="card-score">${formatScore(entry.score, 6)}</div>
+                <div class="card-meta">
+                  <span>${escapeHtml(formatDelta(delta, index === 0))}</span>
+                  <span>${escapeHtml(submitted)}</span>
+                  <span>${entry.attempts} attempt${entry.attempts === 1 ? "" : "s"}</span>
+                </div>
+              </article>
+            `;
+          })
+          .join("");
+      }
+
+      function calculateYDomain(points) {
+        const scores = points.map((point) => point.y);
+        const minScore = Math.min(...scores);
+        const maxScore = Math.max(...scores);
+        const spread = maxScore - minScore;
+        const padding = Math.max(0.0025, spread * 0.3);
+        const minY = Math.max(0, Math.floor((minScore - padding) * 1000) / 1000);
+        const maxY = Math.min(1, Math.ceil((maxScore + padding) * 1000) / 1000);
+        if (maxY - minY < 0.01) {
+          const center = (maxY + minY) / 2;
+          return {
+            maxY: Math.min(1, center + 0.005),
+            minY: Math.max(0, center - 0.005),
+          };
+        }
+        return { maxY, minY };
+      }
+
+      function calculateXDomain(points) {
+        const values = points.map((point) => point.x);
+        const minX = Math.min(...values);
+        const maxX = Math.max(...values);
+        const observedSpan = Math.max(1, maxX - minX);
+        const minimumSpan = 60 * 60 * 1000;
+        const span = Math.max(observedSpan * 1.25, minimumSpan);
+        const center = (minX + maxX) / 2;
+        return {
+          maxX: center + span / 2,
+          minX: center - span / 2,
+        };
+      }
+
+      function drawRoundedLabel(ctx, text, x, y, color, canvasWidth) {
+        ctx.font = "700 12px system-ui, sans-serif";
+        const paddingX = 7;
+        const width = ctx.measureText(text).width + paddingX * 2;
+        const height = 22;
+        const labelX = Math.min(x, canvasWidth - width - 4);
+        const labelY = y - height / 2;
+
+        ctx.fillStyle = "#ffffff";
+        ctx.strokeStyle = "#d8dee7";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(labelX, labelY, width, height, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = color;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText(text, labelX + paddingX, y);
+      }
+
+      function setTooltip(tooltip, point, x, y, bounds) {
+        const submission = point.submission;
+        const f1 = Number.isFinite(submission.f1_score)
+          ? formatScore(submission.f1_score, 4)
+          : "";
+        const pr = submission.pr_number ? `#${submission.pr_number}` : "";
+        tooltip.innerHTML = `
+          <div class="tooltip-team">${escapeHtml(submission.team_id)}</div>
+          <div class="tooltip-grid">
+            <span class="tooltip-label">ROC-AUC</span>
+            <span>${formatScore(submission.score, 6)}</span>
+            <span class="tooltip-label">F1</span>
+            <span>${escapeHtml(f1)}</span>
+            <span class="tooltip-label">Submitted</span>
+            <span>${escapeHtml(formatTime(submission.submitted_at))}</span>
+            <span class="tooltip-label">PR</span>
+            <span>${escapeHtml(pr)}</span>
+            <span class="tooltip-label">Run</span>
+            <span>${escapeHtml(submission.run_id || "")}</span>
+          </div>
+        `;
+        tooltip.style.display = "block";
+        const tooltipWidth = tooltip.offsetWidth;
+        const tooltipHeight = tooltip.offsetHeight;
+        const left = Math.min(
+          Math.max(8, x + 16),
+          bounds.width - tooltipWidth - 8
+        );
+        const top = Math.min(
+          Math.max(8, y - tooltipHeight - 14),
+          bounds.height - tooltipHeight - 8
+        );
+        tooltip.style.left = `${left}px`;
+        tooltip.style.top = `${top}px`;
+      }
+
+      function attachTooltipHandlers(canvas) {
+        if (canvas.dataset.tooltipReady === "true") {
+          return;
+        }
+        canvas.dataset.tooltipReady = "true";
+        canvas.addEventListener("mousemove", (event) => {
+          const tooltip = document.getElementById("chart-tooltip");
+          const bounds = canvas.getBoundingClientRect();
+          const x = event.clientX - bounds.left;
+          const y = event.clientY - bounds.top;
+          const hitPoints = canvas._hitPoints || [];
+          let nearest = null;
+          let nearestDistance = Number.POSITIVE_INFINITY;
+
+          for (const point of hitPoints) {
+            const distance = Math.hypot(point.screenX - x, point.screenY - y);
+            if (distance < nearestDistance) {
+              nearest = point;
+              nearestDistance = distance;
+            }
+          }
+
+          if (nearest && nearestDistance <= 18) {
+            setTooltip(tooltip, nearest, x, y, bounds);
+          } else {
+            tooltip.style.display = "none";
+          }
+        });
+        canvas.addEventListener("mouseleave", () => {
+          document.getElementById("chart-tooltip").style.display = "none";
+        });
+      }
+
+      function drawChart(data) {
+        const canvas = document.getElementById("score-chart");
+        const empty = document.getElementById("empty-chart");
+        const ctx = canvas.getContext("2d");
+        const ratio = window.devicePixelRatio || 1;
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = Math.max(1, Math.floor(rect.width * ratio));
+        canvas.height = Math.max(1, Math.floor(rect.height * ratio));
+        ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+        attachTooltipHandlers(canvas);
+
+        const grouped = groupSubmissions(validSubmissions(data));
+        const teams = [...grouped.keys()].sort();
+        if (teams.length === 0) {
+          empty.style.display = "flex";
+          ctx.clearRect(0, 0, rect.width, rect.height);
+          document.getElementById("chart-range").textContent =
+            "Visible range: no scores";
+          document.getElementById("submission-count").textContent = "";
+          return;
+        }
+
+        const series = teams.map((team, index) => ({
+          color: COLORS[index % COLORS.length],
+          points: bestStepSeries(grouped.get(team)),
+          team,
+        }));
+        const allPoints = series.flatMap((item) => item.points);
+        if (allPoints.length === 0) {
+          empty.style.display = "flex";
+          ctx.clearRect(0, 0, rect.width, rect.height);
+          return;
+        }
+
+        empty.style.display = "none";
+        const { minX, maxX } = calculateXDomain(allPoints);
+        const { minY, maxY } = calculateYDomain(allPoints);
+        const xSpan = Math.max(1, maxX - minX);
+        const ySpan = Math.max(0.000001, maxY - minY);
+        const margin = { bottom: 56, left: 64, right: 118, top: 22 };
+        const width = rect.width - margin.left - margin.right;
+        const height = rect.height - margin.top - margin.bottom;
+        const xScale = (value) => margin.left + ((value - minX) / xSpan) * width;
+        const yScale = (value) =>
+          margin.top + height - ((value - minY) / ySpan) * height;
+
+        document.getElementById("chart-range").textContent =
+          `Visible range: ${minY.toFixed(4)} to ${maxY.toFixed(4)}`;
+        document.getElementById("submission-count").textContent =
+          `${allPoints.length} scored submission${allPoints.length === 1 ? "" : "s"}`;
+
+        ctx.clearRect(0, 0, rect.width, rect.height);
+        ctx.font = "12px system-ui, sans-serif";
+        ctx.lineWidth = 1;
+
+        for (let tick = 0; tick <= 5; tick += 1) {
+          const y = margin.top + (height / 5) * tick;
+          const value = maxY - (ySpan / 5) * tick;
+          ctx.strokeStyle = "#e8edf3";
+          ctx.beginPath();
+          ctx.moveTo(margin.left, y);
+          ctx.lineTo(margin.left + width, y);
+          ctx.stroke();
+          ctx.fillStyle = "#586171";
+          ctx.textAlign = "right";
+          ctx.textBaseline = "middle";
+          ctx.fillText(value.toFixed(4), margin.left - 10, y);
+        }
+
+        const localStartDate = compactDateFormatter.format(new Date(minX));
+        const localEndDate = compactDateFormatter.format(new Date(maxX));
+        for (let tick = 0; tick <= 5; tick += 1) {
+          const x = margin.left + (width / 5) * tick;
+          const value = new Date(minX + (xSpan / 5) * tick);
+          ctx.strokeStyle = "#eef2f6";
+          ctx.beginPath();
+          ctx.moveTo(x, margin.top);
+          ctx.lineTo(x, margin.top + height);
+          ctx.stroke();
+          ctx.fillStyle = "#586171";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "top";
+          const label =
+            localStartDate === localEndDate
+              ? compactTimeFormatter.format(value)
+              : compactDateFormatter.format(value);
+          ctx.fillText(label, x, margin.top + height + 12);
+        }
+
+        ctx.strokeStyle = "#9aa4b2";
+        ctx.beginPath();
+        ctx.moveTo(margin.left, margin.top);
+        ctx.lineTo(margin.left, margin.top + height);
+        ctx.lineTo(margin.left + width, margin.top + height);
+        ctx.stroke();
+
+        const hitPoints = [];
+        const usedLabelYs = [];
+        for (const item of series) {
+          if (item.points.length === 0) {
+            continue;
+          }
+
+          ctx.strokeStyle = item.color;
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          let previous = item.points[0];
+          ctx.moveTo(xScale(previous.x), yScale(previous.y));
+          for (const point of item.points.slice(1)) {
+            ctx.lineTo(xScale(point.x), yScale(previous.y));
+            ctx.lineTo(xScale(point.x), yScale(point.y));
+            previous = point;
+          }
+          ctx.lineTo(margin.left + width, yScale(previous.y));
+          ctx.stroke();
+
+          for (const point of item.points) {
+            const screenX = xScale(point.x);
+            const screenY = yScale(point.y);
+            ctx.fillStyle = "#ffffff";
+            ctx.beginPath();
+            ctx.arc(screenX, screenY, 5.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = item.color;
+            ctx.lineWidth = 2.4;
+            ctx.stroke();
+            hitPoints.push({ ...point, screenX, screenY });
+          }
+
+          let labelY = yScale(previous.y);
+          while (usedLabelYs.some((value) => Math.abs(value - labelY) < 26)) {
+            labelY += 26;
+          }
+          usedLabelYs.push(labelY);
+          drawRoundedLabel(
+            ctx,
+            `${item.team} ${formatScore(previous.y, 4)}`,
+            margin.left + width + 10,
+            Math.min(margin.top + height - 11, Math.max(margin.top + 11, labelY)),
+            item.color,
+            rect.width
+          );
+        }
+
+        canvas._hitPoints = hitPoints;
+        document.getElementById("legend").innerHTML = series
+          .map(
+            (item) => `
+              <span class="legend-item">
+                <span class="legend-swatch" style="background:${item.color}"></span>
+                ${escapeHtml(item.team)}
+              </span>
+            `
+          )
+          .join("");
+      }
+
+      function renderTable(rankings) {
+        const tbody = document.getElementById("entries");
+        if (rankings.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="10">No scores yet.</td></tr>';
+          return;
+        }
+
+        const leaderScore = rankings[0].score;
+        tbody.innerHTML = rankings
+          .map((entry, index) => {
+            const delta = entry.score - leaderScore;
+            const pr = entry.pr_number
+              ? `<a href="${REPO_URL}/pull/${encodeURIComponent(entry.pr_number)}">#${escapeHtml(entry.pr_number)}</a>`
+              : "";
+            const run = entry.run_id
+              ? `<a href="${REPO_URL}/actions/runs/${encodeURIComponent(entry.run_id)}">${escapeHtml(entry.run_id)}</a>`
+              : "";
+            return `
+              <tr>
+                <td class="rank">${index + 1}</td>
+                <td>${escapeHtml(entry.team_id)}</td>
+                <td class="score">${formatScore(entry.score, 6)}</td>
+                <td class="delta">${escapeHtml(formatDelta(delta, index === 0))}</td>
+                <td class="number">${entry.f1_score === null ? "" : formatScore(entry.f1_score, 4)}</td>
+                <td>${escapeHtml(formatTime(entry.bestSubmittedAt))}</td>
+                <td>${escapeHtml(formatTime(entry.latestSubmittedAt))}</td>
+                <td class="number">${entry.attempts || ""}</td>
+                <td>${pr}</td>
+                <td>${run}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      async function loadLeaderboard() {
+        const response = await fetch("leaderboard.json", { cache: "no-store" });
+        const data = await response.json();
+        const rankings = buildRankings(data);
+        latestData = data;
+
+        document.getElementById("updated").textContent = data.updated_at
+          ? `Last updated: ${timeFormatter.format(new Date(data.updated_at))}`
+          : "No official scores yet.";
+        document.getElementById("metric").textContent = `Metric: ${
+          data.metric_label || "primary score"
+        }`;
+
+        renderScoreStrip(rankings);
+        renderTable(rankings);
+        drawChart(data);
+        if (!resizeHandlerAttached) {
+          resizeHandlerAttached = true;
+          window.addEventListener("resize", () => {
+            if (latestData) {
+              drawChart(latestData);
+            }
+          });
+        }
+      }
+
+      loadLeaderboard().catch((error) => {
+        document.getElementById("updated").textContent =
+          "Failed to load leaderboard.";
+        console.error(error);
+      });
+    </script>
+  </body>
+</html>
