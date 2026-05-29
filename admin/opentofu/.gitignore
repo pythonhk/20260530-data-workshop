@@ -1,0 +1,8 @@
+.terraform/
+.terraform.tfstate.lock.info
+terraform.tfvars
+terraform.tfstate*
+tfplan*
+generated/
+*.pem
+*.key

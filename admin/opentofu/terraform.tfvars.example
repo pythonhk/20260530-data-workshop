@@ -1,0 +1,11 @@
+github_owner    = "pythonhk"
+repository_name = "20260530-data-workshop"
+
+tournament_name             = "HKPUG Data Cleaning Tournament"
+team_count                  = 20
+team_prefix                 = "team"
+max_daily_scored_attempts   = 3
+tournament_timezone         = "Asia/Hong_Kong"
+score_metric                = "roc_auc"
+enable_pages                = true
+enable_branch_protection    = true
