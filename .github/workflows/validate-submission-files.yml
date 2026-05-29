@@ -2,6 +2,8 @@ name: Validate Submission Files
 
 on:
   pull_request_target:
+    branches:
+      - main
 
 permissions:
   pull-requests: read
