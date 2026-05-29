@@ -1,15 +1,10 @@
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
-
 [project]
 name = "dataclean-workshop"
 version = "0.1.0"
-description = "Add your description here"
+description = "HKPUG data cleaning tournament starter"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
-    "numpy>=2.4.4",
     "pandas>=3.0.2",
     "scikit-learn>=1.7.2",
 ]
@@ -19,9 +14,5 @@ dev = [
     "pytest>=8.4.2",
 ]
 
-[tool.hatch.build.targets.wheel]
-packages = ["src/dataclean_workshop"]
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-norecursedirs = ["huge", ".venv", ".git"]
+[tool.uv]
+package = false

@@ -15,8 +15,6 @@ dist/
 artifacts/
 data/test_labels.csv
 data/messy_transport_data_10000.json
-submission/clean.py.cms
-submission/main.py.cms
 
 # OpenTofu admin state and generated private material
 admin/opentofu/.terraform/

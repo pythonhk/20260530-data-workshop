@@ -68,19 +68,19 @@ jobs:
           openssl cms -decrypt \
             -inform DER \
             -in scoring-input/cleaned_train.csv.cms \
-            -recip config/public_keys/cleaned_output_cert.pem \
+            -recip .github/tournament/public_keys/cleaned_output_cert.pem \
             -inkey "$RUNNER_TEMP/cleaned_output_key.pem" \
             -out scoring-input/cleaned_train.csv
           openssl cms -decrypt \
             -inform DER \
             -in scoring-input/cleaned_test.csv.cms \
-            -recip config/public_keys/cleaned_output_cert.pem \
+            -recip .github/tournament/public_keys/cleaned_output_cert.pem \
             -inkey "$RUNNER_TEMP/cleaned_output_key.pem" \
             -out scoring-input/cleaned_test.csv
           openssl cms -decrypt \
             -inform DER \
-            -in data/test_labels.csv.cms \
-            -recip config/public_keys/hidden_labels_cert.pem \
+            -in .github/tournament/test_labels.csv.cms \
+            -recip .github/tournament/public_keys/hidden_labels_cert.pem \
             -inkey "$RUNNER_TEMP/hidden_labels_key.pem" \
             -out "$RUNNER_TEMP/test_labels.csv"
           rm -f "$RUNNER_TEMP/cleaned_output_key.pem" "$RUNNER_TEMP/hidden_labels_key.pem"

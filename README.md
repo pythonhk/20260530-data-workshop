@@ -10,14 +10,12 @@ against hidden test labels, and updates the global leaderboard.
 
 - `submission/clean.py`
 - `pyproject.toml` and `uv.lock` if your cleaner needs extra public packages
-- `submission/notes.md` if you want to leave notes for admins
 
 For an official PR, encrypt and submit only:
 
 - `submission/clean.py.cms`
 - `submission/manifest.json`
 - `submission/manifest.sig`
-- `submission/notes.md` if needed
 - `pyproject.toml`
 - `uv.lock`
 
@@ -64,9 +62,7 @@ After receiving your team private key, copy `submission/manifest.example.json`
 to `submission/manifest.json`, set your assigned `team_id`, then run:
 
 ```bash
-scripts/encrypt_submission.sh \
-  config/public_keys/team_code_cert.pem \
-  /path/to/team_private_key.pem
+submission/encrypt_submission.sh /path/to/team_private_key.pem
 ```
 
 ## Warm-Up Note

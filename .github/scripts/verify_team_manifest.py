@@ -55,6 +55,29 @@ def resolve_repo_path(repository_root: Path, value: str) -> Path:
     return path
 
 
+def resolve_team_cert(
+    team_id: str,
+    team_entry: dict,
+    repository_root: Path,
+    temp_dir: Path,
+) -> Path:
+    cert_pem = team_entry.get("cert_pem")
+    cert_path = team_entry.get("cert_path")
+
+    if isinstance(cert_pem, str):
+        cert = temp_dir / f"{team_id}.cert.pem"
+        cert.write_text(cert_pem, encoding="utf-8")
+        return cert
+
+    if isinstance(cert_path, str):
+        cert = resolve_repo_path(repository_root, cert_path)
+        if not cert.is_file():
+            raise FileNotFoundError(cert)
+        return cert
+
+    raise ValueError(f"{team_id} allowlist entry must include cert_pem")
+
+
 def run_openssl(args: list[str]) -> None:
     subprocess.run(["openssl", *args], check=True)
 
@@ -79,21 +102,15 @@ def verify_submission(config: VerificationConfig) -> str:
     team_entry = teams[team_id]
     if not isinstance(team_entry, dict):
         raise ValueError(f"{team_id} has an invalid allowlist entry")
-    cert_path = team_entry.get("cert_path")
-    if not isinstance(cert_path, str):
-        raise ValueError(f"{team_id} allowlist entry must include cert_path")
-
-    cert = resolve_repo_path(config.repository_root, cert_path)
-    if not cert.is_file():
-        raise FileNotFoundError(cert)
-
-    expected_sha256 = team_entry.get("cert_sha256")
-    actual_sha256 = hashlib.sha256(cert.read_bytes()).hexdigest()
-    if expected_sha256 != actual_sha256:
-        raise ValueError(f"{team_id} certificate digest does not match allowlist")
-
-    run_openssl(["verify", "-CAfile", str(config.ca_cert), str(cert)])
     with tempfile.TemporaryDirectory() as temp_dir:
+        temp_path = Path(temp_dir)
+        cert = resolve_team_cert(team_id, team_entry, config.repository_root, temp_path)
+        expected_sha256 = team_entry.get("cert_sha256")
+        actual_sha256 = hashlib.sha256(cert.read_bytes()).hexdigest()
+        if expected_sha256 != actual_sha256:
+            raise ValueError(f"{team_id} certificate digest does not match allowlist")
+
+        run_openssl(["verify", "-CAfile", str(config.ca_cert), str(cert)])
         public_key = Path(temp_dir) / "team_public_key.pem"
         subprocess.run(
             [

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-cert_path="${1:-config/public_keys/team_code_cert.pem}"
-team_private_key_path="${2:-${TEAM_PRIVATE_KEY_PATH:-}}"
+cert_path=".github/tournament/public_keys/team_code_cert.pem"
+team_private_key_path="${1:-${TEAM_PRIVATE_KEY_PATH:-}}"
 
 if [[ ! -f "$cert_path" ]]; then
   echo "Public certificate not found: $cert_path" >&2

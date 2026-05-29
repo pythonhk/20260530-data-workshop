@@ -28,7 +28,6 @@ jobs:
               "submission/clean.py.cms",
               "submission/manifest.json",
               "submission/manifest.sig",
-              "submission/notes.md",
               "uv.lock",
             ]);
 
@@ -100,8 +99,8 @@ jobs:
           python3 .github/scripts/verify_team_manifest.py \
             --manifest submission/manifest.json \
             --signature submission/manifest.sig \
-            --allowlist config/team_allowlist.json \
-            --ca-cert config/public_keys/tournament_ca_cert.pem \
+            --allowlist .github/tournament/team_allowlist.json \
+            --ca-cert .github/tournament/public_keys/tournament_ca_cert.pem \
             --repository-root .
 
       - name: Set up uv
@@ -142,7 +141,7 @@ jobs:
           openssl cms -decrypt \
             -inform DER \
             -in submission/clean.py.cms \
-            -recip config/public_keys/team_code_cert.pem \
+            -recip .github/tournament/public_keys/team_code_cert.pem \
             -inkey "$RUNNER_TEMP/team_code_key.pem" \
             -out "$RUNNER_TEMP/submission_clean.py"
           rm -f "$RUNNER_TEMP/team_code_key.pem"
@@ -191,14 +190,14 @@ jobs:
             -outform DER \
             -in artifacts/cleaned_train.csv \
             -out artifacts/cleaned_train.csv.cms \
-            config/public_keys/cleaned_output_cert.pem
+            .github/tournament/public_keys/cleaned_output_cert.pem
           openssl cms -encrypt \
             -aes-256-cbc \
             -binary \
             -outform DER \
             -in artifacts/cleaned_test.csv \
             -out artifacts/cleaned_test.csv.cms \
-            config/public_keys/cleaned_output_cert.pem
+            .github/tournament/public_keys/cleaned_output_cert.pem
           cp submission/manifest.json artifacts/manifest.json
           cat > artifacts/run_metadata.json <<EOF
           {

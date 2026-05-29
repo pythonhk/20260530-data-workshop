@@ -15,7 +15,11 @@ from sklearn.metrics import f1_score, roc_auc_score
 REPOSITORY_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(REPOSITORY_ROOT))
 
-from train_submission import SUBMISSION_FEATURES, build_pipeline
+from train_submission import (
+    SUBMISSION_FEATURES,
+    build_pipeline,
+    normalize_model_features,
+)
 
 
 TEAM_ID_RE = re.compile(r"^[A-Za-z0-9_.-]{2,64}$")
@@ -135,8 +139,14 @@ def score_submission(
     if y_test.nunique() < 2:
         raise ValueError("test labels must contain at least two classes")
 
-    X_train = train[SUBMISSION_FEATURES]
-    X_test = test[SUBMISSION_FEATURES]
+    features = normalize_model_features(
+        pd.concat(
+            [train[SUBMISSION_FEATURES], test[SUBMISSION_FEATURES]],
+            ignore_index=True,
+        )
+    )
+    X_train = features.iloc[: len(train)].reset_index(drop=True)
+    X_test = features.iloc[len(train) :].reset_index(drop=True)
     model = build_pipeline(X_train, random_state=20260530)
     model.fit(X_train, y_train)
     probabilities = model.predict_proba(X_test)[:, 1]
