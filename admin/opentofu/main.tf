@@ -313,3 +313,23 @@ resource "github_branch_protection" "leaderboard" {
   require_conversation_resolution = false
   required_linear_history         = true
 }
+
+resource "github_branch_protection" "admin" {
+  count = var.enable_branch_protection ? 1 : 0
+
+  repository_id = data.github_repository.target.node_id
+  pattern       = "admin"
+
+  enforce_admins                  = true
+  allows_deletions                = false
+  allows_force_pushes             = false
+  require_conversation_resolution = false
+  required_linear_history         = true
+
+  required_pull_request_reviews {
+    dismiss_stale_reviews           = true
+    require_code_owner_reviews      = false
+    require_last_push_approval      = false
+    required_approving_review_count = 0
+  }
+}
