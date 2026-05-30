@@ -54,6 +54,10 @@ uv run python train_submission.py \
   --labels data/train_labels.csv
 ```
 
+`train_submission.py` trains the fixed model on the first 80% of the cleaned
+training rows and reports validation metrics on the last 20%. To use a
+different validation size, add for example `--test-size 0.30`.
+
 The official scorer will also run your cleaner on `data/test_features.csv`.
 You do not need test labels for the local dry run.
 
