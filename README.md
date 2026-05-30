@@ -48,13 +48,14 @@ From the repo root:
 uv sync --locked
 uv run python submission/clean.py \
   --train-input data/train_features.csv \
-  --test-input data/test_features.csv \
-  --train-output artifacts/cleaned_train.csv \
-  --test-output artifacts/cleaned_test.csv
+  --train-output artifacts/cleaned_train.csv
 uv run python train_submission.py \
   --input artifacts/cleaned_train.csv \
   --labels data/train_labels.csv
 ```
+
+The official scorer will also run your cleaner on `data/test_features.csv`.
+You do not need test labels for the local dry run.
 
 ## Official Submission
 
