@@ -61,6 +61,10 @@ different validation size, add for example `--test-size 0.30`.
 The official scorer will also run your cleaner on `data/test_features.csv`.
 You do not need test labels for the local dry run.
 
+PR scores are different from local validation. The trusted GitHub Action trains
+on your cleaned train output, evaluates on your cleaned `data/test_features.csv`
+output, and uses hidden labels that are not in the public repo.
+
 ## Official Submission
 
 After receiving your team private key, copy `submission/manifest.example.json`

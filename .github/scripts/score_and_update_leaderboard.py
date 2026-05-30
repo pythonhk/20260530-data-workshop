@@ -29,6 +29,7 @@ TARGET_COLUMN = "delay_risk"
 @dataclass(frozen=True)
 class ScoreResult:
     team_id: str
+    evaluation_mode: str
     score: float
     f1_score: float
     submitted_at: str
@@ -242,6 +243,7 @@ def append_result(
 ) -> None:
     submission = {
         "team_id": result.team_id,
+        "evaluation_mode": result.evaluation_mode,
         "score": result.score,
         "f1_score": result.f1_score,
         "submitted_at": result.submitted_at,
@@ -282,6 +284,7 @@ def main() -> None:
     )
     result = ScoreResult(
         team_id=team_id,
+        evaluation_mode="official_hidden_test_set",
         score=score,
         f1_score=f1,
         submitted_at=submitted_at,
