@@ -223,13 +223,13 @@ def main() -> None:
     summary = {
         "input": args.input,
         "target_col": args.target_col,
-        "evaluation_mode": "ordered_record_split",
+        "evaluation_mode": "local_ordered_validation_split",
         "feature_cols": SUBMISSION_FEATURES,
         "model_config": FIXED_MODEL_CONFIG,
         "train_rows": int(len(x_train)),
-        "test_rows": int(len(x_eval)),
-        "f1_score": round(metrics["f1_score"], 4),
-        "roc_auc": round(metrics["roc_auc"], 4),
+        "validation_rows": int(len(x_eval)),
+        "validation_f1_score": round(metrics["f1_score"], 4),
+        "validation_roc_auc": round(metrics["roc_auc"], 4),
     }
     print(json.dumps(summary, indent=2))
 
