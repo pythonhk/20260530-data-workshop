@@ -28,7 +28,6 @@ jobs:
       MAX_DAILY_SCORED_ATTEMPTS: ${{ vars.MAX_DAILY_SCORED_ATTEMPTS }}
       SCORE_METRIC: ${{ vars.SCORE_METRIC }}
       TOURNAMENT_TIMEZONE: ${{ vars.TOURNAMENT_TIMEZONE }}
-      PR_NUMBER: ${{ github.event.workflow_run.pull_requests[0].number }}
 
     steps:
       - name: Checkout scorer
@@ -54,6 +53,16 @@ jobs:
           path: scoring-input
           run-id: ${{ github.event.workflow_run.id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Load PR metadata
+        run: |
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import json
+          from pathlib import Path
+
+          metadata = json.loads(Path("scoring-input/run_metadata.json").read_text())
+          print(f"PR_NUMBER={metadata.get('pr_number', '')}")
+          PY
 
       - name: Decrypt scoring inputs
         env:
