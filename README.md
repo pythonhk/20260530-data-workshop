@@ -6,6 +6,27 @@ Teams submit cleaner code. The trusted GitHub Action runs that cleaner against
 the public train and test feature files, trains the fixed model, evaluates
 against hidden test labels, and updates the global leaderboard.
 
+## Participant Workflow
+
+1. Fork this repository.
+2. Clone your fork:
+
+```bash
+git clone https://github.com/<your-github-username>/20260530-data-workshop.git
+cd 20260530-data-workshop
+uv sync --locked
+```
+
+3. Copy the manifest template:
+
+```bash
+cp submission/manifest.example.json submission/manifest.json
+```
+
+4. Edit `submission/manifest.json` and set `team_id` to your assigned team id.
+5. Edit and test `submission/clean.py`.
+6. Encrypt, sign, and open a PR to `pythonhk/20260530-data-workshop:main`.
+
 ## Files You Edit
 
 - `submission/clean.py`
