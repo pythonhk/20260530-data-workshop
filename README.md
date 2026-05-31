@@ -95,6 +95,16 @@ to `submission/manifest.json`, set your assigned `team_id`, then run:
 submission/encrypt_submission.sh /path/to/team_private_key.pem
 ```
 
+On Windows PowerShell, run:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\submission\encrypt_submission.ps1 C:\path\to\team_private_key.pem
+```
+
+If Windows says `OpenSSL was not found`, install
+[Git for Windows](https://git-scm.com/download/win), reopen PowerShell, and run
+the same command again.
+
 The script encrypts `submission/clean.py`, writes its SHA-256 digest into the
 manifest, and signs the manifest with your team private key.
 
