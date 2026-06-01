@@ -1,8 +1,18 @@
 {
   "schema_version": 2,
   "metric_label": "ROC-AUC",
-  "updated_at": "2026-05-31T06:59:25Z",
+  "updated_at": "2026-06-01T16:28:51Z",
   "entries": [
+    {
+      "team_id": "team-02",
+      "score": 0.7590669384123467,
+      "submitted_at": "2026-06-01T16:28:51Z",
+      "best_submitted_at": "2026-06-01T16:28:51Z",
+      "latest_submitted_at": "2026-06-01T16:28:51Z",
+      "attempts": 4,
+      "run_id": "26767811373",
+      "pr_number": "14"
+    },
     {
       "team_id": "team-06",
       "score": 0.6886559251138843,
@@ -12,16 +22,6 @@
       "attempts": 3,
       "run_id": "26684281828",
       "pr_number": "13"
-    },
-    {
-      "team_id": "team-02",
-      "score": 0.6338657947274311,
-      "submitted_at": "2026-05-31T06:59:25Z",
-      "best_submitted_at": "2026-05-31T06:59:25Z",
-      "latest_submitted_at": "2026-05-31T06:59:25Z",
-      "attempts": 3,
-      "run_id": "26705940754",
-      "pr_number": "14"
     },
     {
       "team_id": "team-20",
@@ -105,6 +105,15 @@
       "f1_score": 0.6685415829650462,
       "submitted_at": "2026-05-31T06:59:25Z",
       "run_id": "26705940754",
+      "pr_number": "14"
+    },
+    {
+      "team_id": "team-02",
+      "evaluation_mode": "official_hidden_test_set",
+      "score": 0.7590669384123467,
+      "f1_score": 0.8236092265943012,
+      "submitted_at": "2026-06-01T16:28:51Z",
+      "run_id": "26767811373",
       "pr_number": "14"
     }
   ]
