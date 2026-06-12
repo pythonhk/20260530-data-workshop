@@ -24,3 +24,6 @@ admin/opentofu/terraform.tfstate*
 admin/opentofu/terraform.tfvars
 
 team_private_key.pem
+clean_train.ipynb
+weather_transformation.py
+submission/clean.py
